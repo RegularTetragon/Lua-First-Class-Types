@@ -10,6 +10,7 @@ typed local and global variables.
 By implementing Types at runtime from within Lua types are first class as they are all effectively objects. Eat your heart out SmallTalk.
 
 This project was developed for Dr. Finkels CS655 class by Vincent Mattingly.
+http://www.cs.uky.edu/~raphael/courses/CS655.html
 
 # Environment
 An installation of Lua5.3 is necessary as this library overloads the << operator
