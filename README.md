@@ -7,6 +7,8 @@ and objects, not names. That said I believe due to the ability to get the curren
 a hash table it is likely possible to apply these type constraints to that table to allow for strongly
 typed local and global variables.
 
+By implementing Types at runtime from within Lua types are first class as they are all effectively objects. Eat your heart out SmallTalk.
+
 This project was developed for Dr. Finkels CS655 class by Vincent Mattingly.
 
 # Environment
@@ -17,21 +19,21 @@ simply runs all the tests.
 # Files
 luatype
  * src
- * * Dictionary.lua
- * * Function.lua
- * * Interface.lua
- * * Primitives.lua
- * * Tuple.lua
- * * Type.lua
- * * Union.lua
+   * Dictionary.lua
+   * Function.lua
+   * Interface.lua
+   * Primitives.lua
+   * Tuple.lua
+   * Type.lua
+   * Union.lua
  * test
- * * Dictionary.lua
- * * Function.lua
- * * Interface.lua
- * * Primitives.lua
- * * Tuple.lua
- * * Type.lua
- * * Union.lua
+   * Dictionary.lua
+   * Function.lua
+   * Interface.lua
+   * Primitives.lua
+   * Tuple.lua
+   * Type.lua
+   * Union.lua
  * Main.lua
  * Makefile
  * Readme.md
@@ -99,7 +101,7 @@ contains and superset methods, but may also provide a tostring method. If you do
 a tostring method it will display "AnAnonymousType"
 
 Here is an example of newtype being used
-
+```
 NewType = newtype {
     contains = function(self, instance)
         return Table:contains(instance) and Number:contains(instance.value)
@@ -111,11 +113,11 @@ NewType = newtype {
         return "NewType"
     end;
 }
-
+```
 Optionally, you may provide a list of operators to overload, in which case you must invoke
 newtype like an ordinary function. Give the method table first, followed by the operator
 overload table:
-
+```
 NewType = newtype (
     {
         contains = function(self, instance)
@@ -134,7 +136,7 @@ NewType = newtype (
         end
     }
 )
-
+```
 ## Union types
 Sometimes you may want a variable to contain one of several types. To do this you can
 create a union type:
@@ -150,7 +152,7 @@ Optional construction:
 
 A union type is a superset of all it's composite types. If you would like to discriminate on
 this you can use the typecase function:
-
+```
 typecase (value) {
     [T1] = function()
     end;
@@ -162,9 +164,10 @@ typecase (value) {
     [TN] = function()
     end;
 }
-
+```
 Cases are checked in smallest type order. i.e. if you would like to provide a default, you may use
 Top anywhere in the typecase and it will be run last. Only one case will run.
+```
 typecase (value) {
     [T1] = function()
         return "t1"
@@ -173,6 +176,7 @@ typecase (value) {
         return "default"
     end;
 }
+```
 typecase returns whatever the case that is run returns.
 ## Tuple Types
 Lua tuples are akin to an unpacked list in Python. They are fairly ephemeral and used in the following
@@ -307,3 +311,53 @@ I1 .. I2 == interface {
 }
 ```
 # Possible extensions
+## Self type
+Effectively a cyclical type for interfaces to make defining methods easier.
+```
+IThing = interface {
+    AMethod = Nil << Self * Number * Boolean;
+}
+--would effectively turn into
+IThing = interface {
+    AMethod = Nil << IThing * Number * Boolean;
+}
+--assuming it were allowed.
+```
+Without it we have to resort to
+IThing = interface {
+    AMethod = Any * Number * Boolean
+}
+## Classes
+The initial idea of this project included classes which specify all their publicly accessible members as a single (possibly compound) interface, possibly with some form of nice syntax for contain-and-delegate. For example
+```
+IJumper = interface {
+    Jump = Nil << Self;
+}
+IRunner = interface {
+    Run = Nil << Self;
+}
+IUpdatable = interface {
+    Update = Nil << Self;
+}
+local MyClass = class (IRunner .. IJumper .. IDeveloper) {
+    init = function(self)
+    end;
+    Jump = function(self)
+        self.speedY = self.speedY + 30;
+    end;
+    Update = function(self)
+        self.speedY = self.speedY - 4
+        self.positionX = self.positionX + self.speedX
+        self.positionY = self.positionY + self.speedY
+    end;
+    Run = function(self)
+        self.speedX = 30;
+    end;
+    --this is private and untyped as it's not declared in any of the interfaces
+    speedX = 0;
+    speedY = 0;
+    positionX = 0;
+    positionY = 0;
+}
+```
+
