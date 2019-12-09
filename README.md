@@ -340,7 +340,7 @@ IRunner = interface {
 IUpdatable = interface {
     Update = Nil << Self;
 }
-local MyClass = class (IRunner .. IJumper .. IDeveloper) {
+local MyClass = class (IRunner .. IJumper .. IUpdatable) {
     init = function(self)
     end;
     Jump = function(self)
@@ -354,7 +354,7 @@ local MyClass = class (IRunner .. IJumper .. IDeveloper) {
     Run = function(self)
         self.speedX = 30;
     end;
-    --this is private and untyped as it's not declared in any of the interfaces
+    --these are private and untyped as it's not declared in any of the interfaces
     speedX = 0;
     speedY = 0;
     positionX = 0;
